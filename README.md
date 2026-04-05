@@ -1,4 +1,4 @@
-# CENZ STUDIO - Roblox Audio Converter
+# HAM STUDIO - Roblox Audio Converter
 
 Dashboard app for converting and uploading audio to Roblox.
 
