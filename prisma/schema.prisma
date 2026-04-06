@@ -1,0 +1,156 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      String    @id @default(cuid())
+  name                    String?
+  email                   String?   @unique
+  emailVerified           DateTime?
+  image                   String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  // Discord OAuth fields
+  discordId               String?   @unique
+  discordUsername         String?
+  discordAvatar           String?
+  discordEmail            String?
+  isServerMember          Boolean   @default(false)
+  serverMemberVerifiedAt  DateTime?
+
+  // Roblox account
+  robloxUserId            String?
+  robloxUsername          String?
+  robloxApiKey            String?   // encrypted
+  robloxGroupId           String?
+  robloxGroupApiKey       String?   // encrypted
+
+  // Plan / subscription
+  plan                    Plan      @default(FREE)
+  planExpiresAt           DateTime?
+
+  // Role
+  role                    Role      @default(USER)
+  locale                  String    @default("en")
+
+  // Relations
+  accounts                Account[]
+  sessions                Session[]
+  jobs                    ConversionJob[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model ConversionJob {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Input
+  sourceUrl   String?     // YouTube / SoundCloud URL
+  sourceType  SourceType  @default(URL)
+  fileName    String?     // original file name if uploaded
+
+  // Audio settings
+  speed       Float       @default(2.3)
+  amplify     Float       @default(-4)
+  maxDuration Int         @default(350)
+
+  // Output
+  assetId     String?     // Roblox asset ID
+  assetName   String?
+
+  // Status
+  status      JobStatus   @default(QUEUED)
+  moderation  ModerationStatus?
+  errorMsg    String?
+
+  // Timestamps
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  completedAt DateTime?
+
+  @@map("conversion_jobs")
+}
+
+enum Plan {
+  FREE
+  WEEKLY
+  MONTHLY
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SourceType {
+  URL
+  FILE
+}
+
+enum JobStatus {
+  QUEUED
+  DOWNLOADING
+  PROCESSING
+  UPLOADING
+  UPLOADED
+  UPLOAD_FAILED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ModerationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
