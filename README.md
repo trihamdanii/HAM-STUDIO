@@ -1,4 +1,4 @@
-# CENZ STUDIO — Roblox Audio Converter
+# HAM STUDIO — Roblox Audio Converter
 
 Full-stack Next.js 14 app to convert audio from YouTube/SoundCloud and upload directly to Roblox via Open Cloud API.
 
@@ -42,7 +42,7 @@ Go to [neon.tech](https://neon.tech) → New Project → Copy the connection str
 git init
 git add .
 git commit -m "initial commit"
-gh repo create cenz-studio --private --push
+gh repo create ham-studio --private --push
 ```
 Then: [vercel.com](https://vercel.com) → New Project → Import → Deploy
 
